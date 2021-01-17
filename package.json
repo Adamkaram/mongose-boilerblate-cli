@@ -1,0 +1,40 @@
+{
+  "name": "node-mongoose-cli",
+  "version": "2.0.27",
+  "description": "Generator for creating models, seed, and migrations using mongoose.",
+  "main": "./bin/mongoose-cli",
+  "bin": {
+    "mongoose-cli": "./bin/mongoose-cli"
+  },
+  "preferGlobal": true,
+  "dependencies": {
+    "colors": "^1.1.2",
+    "ejs": "^2.3.4"
+  },
+  "devDependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "bluebird": "^3.0.5",
+    "chai": "^3.4.0",
+    "mongoose": "^4.2.4"
+  },
+  "engines": {
+    "node": "^4.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/medve-dev/node-mongoose-cli.git"
+  },
+  "author": "Bogdan Medvedev <200.medvedev@gmail.com> (https://github.com/medve_dev)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/medve-dev/node-mongoose-cli/issues"
+  },
+  "homepage": "https://github.com/medve-dev/node-mongoose-cli#home",
+  "keywords": [
+    "mongoose",
+    "cli",
+    "orm",
+    "mongo",
+    "generator"
+  ]
+}

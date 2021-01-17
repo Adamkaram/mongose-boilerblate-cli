@@ -1,0 +1,57 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+if (mongoose.connection.readyState === 0)
+    mongoose.connect(require('../connection-config.js'))
+        .catch(err => {
+            console.error('mongoose Error', err)
+        });
+
+<% if (secure) { %>
+var bcrypt = require('bcrypt-nodejs');
+<% } %>
+
+let <%- ""+name+"" %>Schema = new Schema({
+<% for (var attr in attrs) { %>
+<%- "'"+attr+"': { type: "+attrs[attr]+" }," %><% } %>
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
+
+<%- ""+name+"" %>Schema.pre('save', function (next) {
+    this.updatedAt = Date.now();
+    next();
+});
+
+<%- ""+name+"" %>Schema.pre('update', function () {
+    this.constructor.update({_id: this._id}, { $set: { updatedAt: Date.now() } });
+});
+
+<%- ""+name+"" %>Schema.pre('findOneAndUpdate', function () {
+    this.constructor.update({_id: this._id}, { $set: { updatedAt: Date.now() } });
+});
+
+<% secureAttrs.forEach(function(name) { %>
+<%- ""+name+"" %>Schema.pre('save', function (next) {
+var record = this;
+
+// only hash if it has been modified (or is new)
+if (!record.isModified('<%- name %>')) return next();
+
+// hash the password using our new salt
+bcrypt.hash(record['<%- name %>'], null, null, function(err, hash) {
+if (err) return next(err);
+record['<%- name %>'] = hash;
+next();
+});
+});
+
+<%- ""+name+"" %>Schema.methods['<%- name + "Compare" %>'] = function(attempt, next) {
+bcrypt.compare(attempt, this['<%- name %>'], function(err, isMatch) {
+if (err) return next(err);
+next(null, isMatch);
+});
+};
+<% }) %>
+
+/** @name db.<%- ""+name+"" %> */
+module.exports = mongoose.model(<%- "'"+name+"'" %>, <%- ""+name+"" %>Schema);

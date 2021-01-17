@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+
+var colors = require('colors');
+
+
+//! add methods to the console for each of the styles in the colors library
+//! e.g. console.green('hello', 'world')
+for (var style in colors.styles) {
+    console[style] = function (color) {
+        var args = [].slice.call(arguments, 1);
+        var styledStrings = args.map(str => JSON.stringify(str)[color]);
+        console.log.apply(this, styledStrings);
+    }.bind(console, style);
+}
+
+/* all color options:
+ * black, red, green, yellow, blue, magenta, cyan, white, gray, grey
+ * bgBlack, bgRed, bgGreen, bgYellow, bgBlue, bgMagenta, bgCyan, bgWhite
+ * reset, bold, dim, italic, underline, inverse, hidden, strikethrough
+ */
+
+
+// method to convert to pascal-case
+String.prototype.pascal = function () {
+    return this.replace(/^([a-z])/, let => let.toUpperCase())
+        .replace(/[\-\_][a-zA-Z]/, let => let[1].toUpperCase());
+}
+
+
+const help = require('../commands/help');
+const shell = require('../commands/shell').shell;
+const mshell = require('../commands/shell').mshell;
+const init = require('../commands/init');
+const run = require('../commands/seed').run;
+const seed = require('../commands/seed').create;
+const undo = require('../commands/seed').undo;
+const setUri = require('../commands/setUri');
+
+let commands = {help, init, setUri, shell, mshell};
+
+const model = require('../commands/model');
+const migration = require('../commands/migration');
+
+commands.create = commands.generate = commands.g = {model, migration,seed, parent: commands};
+commands.seed = {run, undo, parent: commands};
+
+
+// only do this stuff (parsing argv) if its the parent script
+if (!module.parent) {
+
+    let command = process.argv[2];
+    let type = process.argv[3];
+    let args = process.argv.slice(3);
+
+    if (!command || !commands[command])
+        commands.help.apply(commands, args);
+    else if (typeof commands[command] === 'object') {
+        args = process.argv.slice(4);
+        let func = commands[command][type];
+        if (!func) {
+            if (command === 'seed')
+                return console.log(`
+${'seed command'.blue.underline}
+
+${'"mongoose-cli seed run <modelName> or all"'.green}
+${'"mongoose-cli seed undo <modelName> or all"'.green}
+`);
+
+            return console.red(`Command ${type} does not exist. Try model or migration or seed`);
+        }
+        commands[command][type].apply(commands[command], args);
+    }
+    else if (typeof commands[command] === 'function') {
+        commands[command].apply(commands, args);
+    }
+
+}
+
+// otherwise it is exported to make testing easier
+module.exports = commands;
+
